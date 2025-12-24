@@ -49,9 +49,9 @@ class AdmissionManager:
         # Фильтруем только с согласием
         candidates = {aid: data for aid, data in all_applicants.items() if data['consent']}
         
-        # Ключ сортировки по баллам (убывание), при равенстве — по ID (возрастание)
+        # Ключ сортировки: сумма баллов (убывание), при равенстве — по ID (возрастание)
         def sort_key(a):
-            return (-a['total'], -a['math'], -a['russian'], -a['physicsIct'], -a['individual'], a['id'])
+            return (-a['total'], a['id'])
         
         # Алгоритм Deferred Acceptance
         programs = list(self.capacity.keys())
@@ -166,21 +166,62 @@ class AdmissionManager:
         return result
     
     def _generate_summary(self):
-        """Сформировать общую сводку."""
+        """
+        Сформировать полную сводку по всем требованиям ТЗ:
+        1. Проходные баллы на ОП (или НЕДОБОР)
+        2. Списки зачисленных с ID и суммой баллов
+        3. Детальная статистика по приоритетам для каждой ОП
+        """
         self._run_admission()
         
-        total_capacity = sum(self.capacity.values())
-        total_enrolled = sum(len(lst) for lst in self._enrolled.values())
-        total_applicants = sum(1 for a in self._all_applicants.values() if a['consent'])
+        passing_scores = self.calculate_passing_score()
+        enrolled_lists = self.generate_enrollment_lists()
         
-        shortage = [p for p in self.capacity if len(self._enrolled[p]) < self.capacity[p]]
+        # Детальная статистика по каждой ОП
+        programs_stats = {}
+        for prog in self.capacity.keys():
+            # Подсчитываем заявления по приоритетам (среди всех абитуриентов с согласием)
+            priority_applications = {1: 0, 2: 0, 3: 0, 4: 0}
+            for a in self._all_applicants.values():
+                if a['consent'] and prog in a['priorities']:
+                    prio = a['priorities'][prog]
+                    if prio in priority_applications:
+                        priority_applications[prio] += 1
+            
+            # Подсчитываем зачисленных по приоритетам
+            priority_enrolled = {1: 0, 2: 0, 3: 0, 4: 0}
+            for applicant in self._enrolled[prog]:
+                prio = applicant['priorities'].get(prog, 0)
+                if prio in priority_enrolled:
+                    priority_enrolled[prio] += 1
+            
+            total_applications = sum(priority_applications.values())
+            
+            programs_stats[prog] = {
+                'program_name': self.PROGRAM_NAMES.get(prog, prog),
+                'passing_score': passing_scores[prog] if passing_scores[prog] is not None else 'НЕДОБОР',
+                'capacity': self.capacity[prog],
+                'total_applications': total_applications,
+                'applications_priority_1': priority_applications[1],
+                'applications_priority_2': priority_applications[2],
+                'applications_priority_3': priority_applications[3],
+                'applications_priority_4': priority_applications[4],
+                'enrolled_priority_1': priority_enrolled[1],
+                'enrolled_priority_2': priority_enrolled[2],
+                'enrolled_priority_3': priority_enrolled[3],
+                'enrolled_priority_4': priority_enrolled[4],
+                'total_enrolled': len(self._enrolled[prog]),
+                'enrolled_list': enrolled_lists[prog]
+            }
         
         return {
-            'total_capacity': total_capacity,
-            'total_enrolled': total_enrolled,
-            'total_applicants_with_consent': total_applicants,
-            'programs_with_shortage': shortage,
-            'all_places_filled': total_enrolled == total_capacity
+            'programs': programs_stats,
+            'overall': {
+                'total_capacity': sum(self.capacity.values()),
+                'total_enrolled': sum(len(lst) for lst in self._enrolled.values()),
+                'total_applicants_with_consent': sum(1 for a in self._all_applicants.values() if a['consent']),
+                'programs_with_shortage': [p for p in self.capacity if len(self._enrolled[p]) < self.capacity[p]]
+            }
         }
         
     def get_statistics_report(self):
@@ -192,6 +233,35 @@ class AdmissionManager:
             'summary': self._generate_summary()
         }
         return stats
+    
+    @staticmethod
+    def calculate_dynamics(data_by_days: dict, capacity: dict) -> dict:
+        """
+        Рассчитать динамику проходных баллов по дням.
+        
+        Args:
+            data_by_days: словарь {date: {program_code: [applicants]}}
+            capacity: словарь {program_code: число мест}
+            
+        Returns:
+            Словарь с динамикой проходных баллов по программам и дням
+        """
+        dynamics = {}
+        dates = sorted(data_by_days.keys())
+        
+        for date in dates:
+            manager = AdmissionManager(data_by_days[date], capacity)
+            scores = manager.calculate_passing_score()
+            
+            for prog, score in scores.items():
+                if prog not in dynamics:
+                    dynamics[prog] = {
+                        'program_name': AdmissionManager.PROGRAM_NAMES.get(prog, prog),
+                        'by_date': {}
+                    }
+                dynamics[prog]['by_date'][date] = score if score is not None else 'НЕДОБОР'
+        
+        return dynamics
 
 
 
