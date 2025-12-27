@@ -82,14 +82,24 @@ def load_csv_from_uploads(date_folder: str) -> Dict[str, list]:
             applicants = []
             
             for row in reader:
+                # Поддержка обоих форматов: physicsIct и physics_ict
+                physics_ict = row.get('physicsIct') or row.get('physics_ict', 0)
+                
+                # consent может быть 1/0 или true/false
+                consent_val = row['consent']
+                if consent_val in ['1', 'true', 'True', 'TRUE']:
+                    consent = True
+                else:
+                    consent = False
+                
                 applicants.append({
                     'id': int(row['id']),
-                    'consent': row['consent'].lower() == 'true',
+                    'consent': consent,
                     'priority': int(row['priority']),
                     'total': int(row['total']),
                     'math': int(row.get('math', 0)),
                     'russian': int(row.get('russian', 0)),
-                    'physicsIct': int(row.get('physicsIct', 0)),
+                    'physicsIct': int(physics_ict),
                     'individual': int(row.get('individual', 0))
                 })
             
