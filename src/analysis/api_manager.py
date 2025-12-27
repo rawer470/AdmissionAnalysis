@@ -17,7 +17,7 @@ from admission_stats import AdmissionManager
 # Базовая папка с данными
 BASE_DIR = Path(__file__).parent.parent.parent / "data"
 UPLOADS_DIR = BASE_DIR / "uploads"
-
+MOCK_DIR = BASE_DIR / "mock"
 # Квоты мест (по умолчанию)
 DEFAULT_CAPACITY = {
     'pm': 40,
@@ -56,7 +56,11 @@ def load_csv_from_uploads(date_folder: str) -> Dict[str, list]:
     или
         - date_PM.csv, date_IVT.csv и т.д.
     """
-    upload_path = UPLOADS_DIR / date_folder
+    #ДЛЯ РЕАЛЬНОГО ТЕСТА
+    #upload_path = UPLOADS_DIR / date_folder
+
+    #ДЛЯ МОК ТЕСТА
+    upload_path = MOCK_DIR / date_folder
     
     if not upload_path.exists():
         raise FileNotFoundError(f"Папка {date_folder} не найдена в uploads")
@@ -206,7 +210,7 @@ if __name__ == "__main__":
     
     uvicorn.run(
         "api_manager:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=8000,
         reload=True
     )
