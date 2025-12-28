@@ -224,14 +224,47 @@ class AdmissionManager:
             }
         }
         
-    def get_statistics_report(self):
-        """Получить сводную статистику."""
+    def get_statistics_report(self, date_folder: str = None, save_to_reports: bool = False):
+        """
+        Получить сводную статистику.
+        
+        Args:
+            date_folder: папка для сохранения отчёта (например "01-08")
+            save_to_reports: если True, сохранить stats.json в reports/{date_folder}/
+        """
         stats = {
             'competition': self.calculate_competition_stats(),
             'passing_score': self.calculate_passing_score(),
             'enrolled': self.generate_enrollment_lists(),
             'summary': self._generate_summary()
         }
+        
+        # Сохранение в reports/{date_folder}/stats.json
+        if save_to_reports and date_folder:
+            try:
+                from pathlib import Path
+                import json
+                from datetime import datetime
+                
+                # Путь к папке reports
+                base_dir = Path(__file__).parent.parent.parent / "data" / "reports" / date_folder
+                base_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Добавляем метаданные
+                stats['_metadata'] = {
+                    'generated_at': datetime.now().isoformat(),
+                    'date_folder': date_folder
+                }
+                
+                # Сохраняем
+                stats_file = base_dir / "stats.json"
+                with open(stats_file, 'w', encoding='utf-8') as f:
+                    json.dump(stats, f, ensure_ascii=False, indent=2)
+                    
+            except Exception as e:
+                # Не прерываем выполнение при ошибке сохранения
+                pass
+
         return stats
     
     @staticmethod

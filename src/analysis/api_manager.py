@@ -178,7 +178,10 @@ def analyze_uploads(
         
         # 3. Анализ
         manager = AdmissionManager(applicants_data, capacity)
-        report = manager.get_statistics_report()
+        report = manager.get_statistics_report(
+            date_folder=date_folder,
+            save_to_reports=True  # Сохранить stats.json в reports/{date_folder}/
+        )
         #generate_pdf_report(report)
         
         # 4. Возвращаем результат
