@@ -20,6 +20,7 @@ import reportlab.pdfbase.pdfmetrics
 import reportlab.pdfbase.ttfonts
 
 from admission_stats import AdmissionManager
+from report_manager import ReportManager
 
 
 
@@ -182,7 +183,7 @@ def analyze_uploads(
             date_folder=date_folder,
             save_to_reports=True  # Сохранить stats.json в reports/{date_folder}/
         )
-        #generate_pdf_report(report)
+      
         
         # 4. Возвращаем результат
         return {
@@ -196,6 +197,94 @@ def analyze_uploads(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Ошибка анализа: {str(e)}")
+
+
+
+
+@app.get("/api/generate_pdf_report")
+def generate_pdf_report(
+    date_folders: Optional[str] = None,
+    target_date: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Генерирует PDF отчет о зачислении.
+    
+    Args:
+        date_folders: список папок с датами через запятую (например: "01,02,03,04")
+                     Если не указано, загружаются все доступные отчеты
+        target_date: целевая дата для отчета (например: "04")
+                    Если не указано, используется последняя дата из списка
+    
+    Returns:
+        JSON с информацией о созданном PDF файле
+        
+    Example:
+        GET /api/generate_pdf_report?date_folders=01,02,03,04&target_date=04
+        GET /api/generate_pdf_report  (автоматически найдет все отчеты)
+    """
+    try:
+        report_manager = ReportManager()
+        
+        # Определяем список дат для загрузки
+        if date_folders:
+            # Используем указанные даты
+            folders = [d.strip() for d in date_folders.split(',')]
+        else:
+            # Автоматически находим все доступные отчеты
+            reports_dir = BASE_DIR / "reports"
+            if not reports_dir.exists():
+                raise ValueError("Папка reports не найдена")
+            
+            folders = []
+            for item in reports_dir.iterdir():
+                if item.is_dir() and (item / "stats.json").exists():
+                    folders.append(item.name)
+            
+            if not folders:
+                raise ValueError("Не найдено отчетов для генерации PDF")
+            
+            folders.sort()
+        
+        # Загружаем отчеты
+        loaded_count = 0
+        errors = []
+        for folder in folders:
+            try:
+                report_manager.add_report(folder)
+                loaded_count += 1
+            except Exception as e:
+                errors.append(f"{folder}: {str(e)}")
+        
+        if loaded_count == 0:
+            raise ValueError(f"Не удалось загрузить ни одного отчета. Ошибки: {'; '.join(errors)}")
+        
+        # Определяем целевую дату
+        if not target_date:
+            target_date = folders[-1]  # Используем последнюю дату
+        
+        # Генерируем PDF
+        pdf_path = report_manager.generate_pdf(target_date)
+        
+        return {
+            "success": True,
+            "message": "PDF отчет успешно сгенерирован",
+            "data": {
+                "pdf_path": str(pdf_path),
+                "filename": pdf_path.name,
+                "size_kb": round(pdf_path.stat().st_size / 1024, 2),
+                "dates_included": folders,
+                "target_date": target_date,
+                "reports_loaded": loaded_count
+            },
+            "errors": errors if errors else None
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка: {str(e)}")
 
 
 @app.get("/api/uploads")
