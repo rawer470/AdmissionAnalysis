@@ -41,7 +41,7 @@ def test_analyze():
     print("\n[TEST] Analyze uploads")
     
     # Используем тестовую папку (предполагаем, что data/mock/01 скопирована в uploads)
-    date_folder = "04"
+    date_folder = "03"
     
     response = requests.get(f"{API_URL}/api/analyze/{date_folder}")
     

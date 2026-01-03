@@ -25,4 +25,7 @@ data/*
 # Secrets / env
 .env
 
+# Agent context (Пасхалка от Артёма)
+agent/
+
 
