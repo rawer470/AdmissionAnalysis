@@ -6,4 +6,3 @@ pdfplumber
 matplotlib
 requests
 reportlab
-reportlab
