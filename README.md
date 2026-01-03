@@ -45,7 +45,7 @@ AdmissionAnalysis — это программное обеспечение дл�
 ### Backend
 - **ASP.NET Core MVC** (.NET 10) — веб-приложение, UI
 - **Python 3.12** — аналитический движок
-- **FastAPI** — Python API-сервис (планируется)
+- **FastAPI** — Python API-сервис (планируется; базовая реализация уже присутствует в `src/analysis/api_manager.py`)
 
 ### Python библиотеки
 - `pandas` — обработка данных
@@ -61,6 +61,9 @@ AdmissionAnalysis — это программное обеспечение дл�
 
 ```
 AdmissionAnalysis/
+├── AdmissionAnalysis.sln        # Solution (.NET)
+├── makefile                     # Удобные команды запуска (api/web/dev/analyze/pdf)
+├── claude.md                    # Архитектура/контекст проекта
 ├── src/
 │   ├── web/                    # ASP.NET Core веб-приложение
 │   │   └── WebApp/
@@ -70,6 +73,8 @@ AdmissionAnalysis/
 │   │
 │   ├── analysis/               # Python аналитический модуль
 │   │   ├── admission_stats.py  # Основной класс AdmissionManager
+│   │   ├── api_manager.py       # FastAPI сервис (эндпойнты анализа/генерации PDF)
+│   │   ├── report_manager.py    # Генерация PDF по stats.json
 │   │   ├── requirements.txt    # Python зависимости
 │   │   └── testLogic/          # Тесты и демонстрации
 │   │       ├── test_admission.py
@@ -92,6 +97,8 @@ AdmissionAnalysis/
 ├── docs/                       # Документация
 │   ├── STRUCTURE.txt           # Описание структуры
 │   └── AdmissionManager_CLASS.txt  # API класса AdmissionManager
+│   └── API_MANAGER_API.txt     # Документация по FastAPI сервису (api_manager.py)
+│   └── Командный кейс № 3 «Анализ поступления».pdf  # ТЗ проекта
 │
 ├── docker/                     # Docker конфигурация (будущее)
 ├── env.example                 # Пример переменных окружения
@@ -200,6 +207,37 @@ print(f"Зачислено на ПМ: {len(enrolled['pm'])} человек")
 report = manager.get_statistics_report()
 ```
 
+### Python API сервис (FastAPI)
+
+В проекте есть FastAPI сервис (`src/analysis/api_manager.py`) с базовыми эндпойнтами:
+- `GET /health`
+- `GET /api/analyze/{date_folder}`
+- `GET /api/generate_pdf_report`
+- `GET /api/uploads`
+- `GET /api/programs`
+
+Запуск (варианты):
+
+```bash
+# вариант 1: напрямую
+cd src/analysis
+python3 api_manager.py
+
+# вариант 2: через Makefile из корня репозитория
+make api
+```
+
+Примеры вызовов:
+
+```bash
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/api/analyze/03
+curl "http://127.0.0.1:8000/api/generate_pdf_report?date_folders=01,02,03,04&target_date=04"
+```
+
+Примечание по данным:
+- В текущей конфигурации `load_csv_from_uploads()` использует **mock-режим** (`data/mock/<date_folder>`), а строка для `data/uploads/<date_folder>` закомментирована. Подробности см. `docs/API_MANAGER_API.txt`.
+
 #### Анализ динамики по дням
 
 ```python
@@ -229,6 +267,15 @@ dotnet run
 
 # Приложение доступно по адресу:
 # https://localhost:5001
+# Также в проекте настроен запуск по HTTP на http://localhost:5002 (см. makefile / launchSettings.json)
+```
+
+### Быстрый запуск через makefile (рекомендуется)
+
+```bash
+make dev          # API + Web параллельно
+make analyze DAY=03
+make pdf
 ```
 
 ### Запуск тестов
@@ -342,6 +389,11 @@ python3 src/analysis/testLogic/test_csv.py
 ```
 docs/AdmissionManager_CLASS.txt
 ```
+
+Также полезные материалы:
+- `claude.md` — архитектурная справка/контекст проекта
+- `docs/API_MANAGER_API.txt` — документация по `api_manager.py`
+- `docs/Командный кейс № 3 «Анализ поступления».pdf` — ТЗ проекта
 
 ### Основные методы
 
