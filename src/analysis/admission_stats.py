@@ -262,8 +262,14 @@ class AdmissionManager:
                     json.dump(stats, f, ensure_ascii=False, indent=2)
                     
             except Exception as e:
-                # Не прерываем выполнение при ошибке сохранения
-                pass
+                # Не прерываем выполнение при ошибке сохранения, но записываем ошибку
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.exception(f"Ошибка сохранения stats.json в {date_folder}: {e}")
+                stats['save_error'] = str(e)
+                stats['save_saved'] = False
+            else:
+                stats['save_saved'] = True
 
         return stats
     
