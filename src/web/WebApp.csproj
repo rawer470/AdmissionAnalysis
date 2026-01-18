@@ -15,6 +15,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="**/bin/**" />
+    <Compile Remove="**/obj/**" />
+    <Content Remove="**/bin/**" />
+    <Content Remove="**/obj/**" />
+    <EmbeddedResource Remove="**/bin/**" />
+    <EmbeddedResource Remove="**/obj/**" />
+    <None Remove="**/bin/**" />
+    <None Remove="**/obj/**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Data/Repositories/" />
     <Folder Include="Views/Admission/" />
   </ItemGroup>
