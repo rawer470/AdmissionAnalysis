@@ -1,7 +1,20 @@
+using Microsoft.EntityFrameworkCore;
+using WebApp.Data;
+using WebApp.Repositories;
+using WebApp.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Регистрация сервиса для добавления БД
+builder.Services.AddDbContext<AdmissionContext>(options =>
+    options.UseSqlite(builder.Configuration.
+    GetConnectionString("MyDataBase")));
+
+builder.Services.AddScoped<IApplicantsCurrentRepository, ApplicantsCurrentRepository>();
+builder.Services.AddScoped<ImportService>();
 
 var app = builder.Build();
 
@@ -22,7 +35,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Admission}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 
