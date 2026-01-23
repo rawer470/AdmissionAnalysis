@@ -1,0 +1,11 @@
+﻿<h1>UploadCsv</h1>
+
+<form asp-action="UploadCsv" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="file" name="Ib" accept=".csv">
+    <input type="file" name="Itss" accept=".csv">
+    <input type="file" name="Ivt" accept=".csv">
+    <input type="file" name="Pm" accept=".csv">
+
+    <input type="submit" title="Отправить">
+</form>

@@ -6,4 +6,28 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**/bin/**" />
+    <Compile Remove="**/obj/**" />
+    <Content Remove="**/bin/**" />
+    <Content Remove="**/obj/**" />
+    <EmbeddedResource Remove="**/bin/**" />
+    <EmbeddedResource Remove="**/obj/**" />
+    <None Remove="**/bin/**" />
+    <None Remove="**/obj/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data/Repositories/" />
+    <Folder Include="Views/Admission/" />
+  </ItemGroup>
+
 </Project>
