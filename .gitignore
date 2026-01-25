@@ -18,9 +18,14 @@ venv/
 .pytest_cache/
 
 # Local data (uploaded files, extracted tables, reports)
-data/
+data/*
+!data/mock/
+!data/mock/**
 
 # Secrets / env
 .env
+
+# Agent context (Пасхалка от Артёма)
+agent/
 
 
