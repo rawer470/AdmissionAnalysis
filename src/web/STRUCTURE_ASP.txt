@@ -1,0 +1,37 @@
+src/
+  web/                 — ASP.NET Core MVC WebApp
+    Controllers/       — MVC-контроллеры
+      — принимают HTTP-запросы
+      — обрабатывают формы загрузки CSV
+      — вызывают Python-сервис
+      — возвращают View / File / Redirect
+
+    Models/            — модели уровня Web
+      — ViewModels (данные для Razor Views)
+      — DTO (данные обмена с Python-сервисом)
+      — НЕ бизнес-логика
+
+    Services/          — сервисы приложения
+      — вызов Python API (HttpClient)
+      — сохранение / чтение файлов
+      — подготовка данных для анализа
+
+    Data/              — работа с базой данных
+      — DbContext
+      — Entity-классы (таблицы БД)
+      — миграции
+      - Repositories(если будет)
+
+    Views/             — Razor Views
+      — страницы загрузки CSV
+      — страницы результатов анализа
+      — страницы отчётов и статусов
+
+    wwwroot/           — статические файлы
+      — css
+      — js
+      — изображения (если будут)
+
+    Program.cs         — точка входа приложения
+    appsettings.json   — конфигурация
+    STRUCTURE_ASP.txt  — описание архитектуры Web
