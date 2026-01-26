@@ -15,6 +15,10 @@ builder.Services.AddDbContext<AdmissionContext>(options =>
 
 builder.Services.AddScoped<IApplicantsCurrentRepository, ApplicantsCurrentRepository>();
 builder.Services.AddScoped<ImportService>();
+builder.Services.AddHttpClient<AnalysisService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8000");
+});
 
 var app = builder.Build();
 

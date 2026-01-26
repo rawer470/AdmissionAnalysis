@@ -5,3 +5,4 @@ pandas
 pdfplumber
 matplotlib
 requests
+reportlab
