@@ -26,6 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="test_ui/test.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Data/Repositories/" />
     <Folder Include="Views/Admission/" />
   </ItemGroup>
