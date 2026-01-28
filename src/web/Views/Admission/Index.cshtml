@@ -1,101 +1,48 @@
 @using WebApp.Models.ViewModels;
+@{
+    ViewData["Title"] = "Admission Analysis";
+}
 
-<head>
-    <link rel="stylesheet" href="test.css" />
-</head>
+@section Styles {
+    <link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
+}
 
-<body>
-    <div>
-        <h1><i>Результат импорта CSV</i></h1>
-    </div>
+<main class="page">
+    <section class="card">
+        <header class="header">
+            <h1 class="title">Результат импорта CSV</h1>
+            <p class="subtitle">Сводка по изменениям после загрузки файлов</p>
+        </header>
 
-    <br />
-    <br />
-
-    <div>
-        <div class="sctable">
-            <div class="rows">
-                <div class="row">
-                    <h3>Показатель</h3>
-                </div>
-                <div class="row">
-                    <h4>Удалено</h4>
-                </div>
-                <div class="row">
-                    <h4>Добавлено</h4>
-                </div>
-                <div class="row">
-                    <h4>Обновлено</h4>
-                </div>
-                <div class="row">
-                    <h4>Строк в snapshot</h4>
-                </div>
+        <div class="stats">
+            <div class="stats__row stats__row--head">
+                <div>Показатель</div>
+                <div style="text-align:right;">Значение</div>
             </div>
 
-            <div class="rows">
-                <div class="row">
-                    <h3>Значение</h3>
-                </div>
-                <div class="row">
-                    <h4>@Model.Deleted</h4>
-                </div>
-                <div class="row">
-                    <h4>@Model.Inserted</h4>
-                </div>
-                <div class="row">
-                    <h4>@Model.Updated</h4>
-                </div>
-                <div class="row">
-                    <h4>@Model.SnapshotRows</h4>
-                </div>
+            <div class="stats__row">
+                <div class="stats__label">Удалено</div>
+                <div class="stats__value">@Model.Deleted</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Добавлено</div>
+                <div class="stats__value">@Model.Inserted</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Обновлено</div>
+                <div class="stats__value">@Model.Updated</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Строк в snapshot</div>
+                <div class="stats__value">@Model.SnapshotRows</div>
             </div>
         </div>
 
-
-        <!-- <div class="sctable">
-            <div class="row">
-                <h3>Показатель</h3>
-            </div>
-            <div class="row">
-                <h3>Значение</h3>
-            </div>
+        <div class="actions">
+            <a class="btnLink" asp-action="UploadCsv">Загрузить новые CSV</a>
         </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Удалено</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.Deleted</h4>
-            </div>
-        </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Добавлено</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.Inserted</h4>
-            </div>
-        </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Обновлено</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.Updated</h4>
-            </div>
-        </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Строк в snapshot</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.SnapshotRows</h4>
-            </div>
-        </div> -->
-    </div>
-
-
-    <div>
-        <a class="admissionA" asp-action="UploadCsv">Загрузить новые CSV</a>
-    </div>
-</body>
+    </section>
+</main>

@@ -50,4 +50,7 @@ public class AdmissionController : Controller
         TempData["SnapshotRows"] = dataFromCsv.snapshotRows;
         return RedirectToAction(nameof(Index));
     }
+
+    // Для перехода на Политику Конфедециальности
+    public IActionResult Privacy() => View(); 
 }
