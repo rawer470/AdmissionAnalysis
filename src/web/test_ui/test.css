@@ -41,6 +41,8 @@ body {
     text-align: start;
 }
 
+/* Home */
+
 a {
     font-size: 1.5em;
     color: #a54d12;
@@ -93,6 +95,35 @@ a:hover {
     display: flex;
     margin: 0px;
     padding: 0px;
+}
+
+/* UploadCsv */
+
+.uploadForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 5px solid black;
+    border-radius: 15px;
+    padding: 1em;
+}
+.uploadElement { 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.4em;
+}
+
+.sendBtn {
+    display: flex;
+    border: 2px solid rgb(32, 32, 32);
+    border-radius: 25px;
+}
+
+.sendBtn:hover {
+    border-width: 3px;
+    border-style:groove;
+    border-color: #000000;
 }
 
 /* a:focus {

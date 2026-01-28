@@ -1,101 +1,29 @@
-﻿@using WebApp.Models.ViewModels;
-
-<head>
+﻿<head>
     <link rel="stylesheet" href="test.css" />
 </head>
 
 <body>
+    <!-- <form asp-action="UploadCsv" method="post" enctype="multipart/form-data"> -->
+    <!-- @Html.AntiForgeryToken() -->
     <div>
-        <h1><i>Результат импорта CSV</i></h1>
+        <h1><i>UploadCsv</i></h1>
     </div>
-
-    <br />
-    <br />
-
-    <div>
-        <div class="sctable">
-            <div class="rows">
-                <div class="row">
-                    <h3>Показатель</h3>
-                </div>
-                <div class="row">
-                    <h4>Удалено</h4>
-                </div>
-                <div class="row">
-                    <h4>Добавлено</h4>
-                </div>
-                <div class="row">
-                    <h4>Обновлено</h4>
-                </div>
-                <div class="row">
-                    <h4>Строк в snapshot</h4>
-                </div>
-            </div>
-
-            <div class="rows">
-                <div class="row">
-                    <h3>Значение</h3>
-                </div>
-                <div class="row">
-                    <h4>@Model.Deleted</h4>
-                </div>
-                <div class="row">
-                    <h4>@Model.Inserted</h4>
-                </div>
-                <div class="row">
-                    <h4>@Model.Updated</h4>
-                </div>
-                <div class="row">
-                    <h4>@Model.SnapshotRows</h4>
-                </div>
-            </div>
+    <div class="uploadForm">
+        <div class="uploadElement">
+            <input type="file" name="Ib" accept=".csv">
         </div>
-
-
-        <!-- <div class="sctable">
-            <div class="row">
-                <h3>Показатель</h3>
-            </div>
-            <div class="row">
-                <h3>Значение</h3>
-            </div>
+        <div class="uploadElement">
+            <input type="file" name="Itss" accept=".csv">
         </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Удалено</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.Deleted</h4>
-            </div>
+        <div class="uploadElement">
+            <input type="file" name="Ivt" accept=".csv">
         </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Добавлено</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.Inserted</h4>
-            </div>
+        <div class="uploadElement">
+            <input type="file" name="Pm" accept=".csv">
         </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Обновлено</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.Updated</h4>
-            </div>
+        <div class="uploadElement">
+            <input class="sendBtn" type="submit" title="Отправить">
         </div>
-        <div class="sctable">
-            <div class="row">
-                <h4>Строк в snapshot</h4>
-            </div>
-            <div class="row">
-                <h4>@Model.SnapshotRows</h4>
-            </div>
-        </div> -->
     </div>
-
-
-    <div>
-        <a class="admissionA" asp-action="UploadCsv">Загрузить новые CSV</a>
-    </div>
+    <!-- </form> -->
 </body>
