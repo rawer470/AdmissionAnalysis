@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 # -------- Paths (repo-specific) --------
 SLN        := AdmissionAnalysis.sln
-WEB_CSPROJ := src/web/WebApp/WebApp.csproj
+WEB_CSPROJ := src/web/WebApp.csproj
 PY_DIR     := src/analysis
 
 # -------- Python / venv --------
