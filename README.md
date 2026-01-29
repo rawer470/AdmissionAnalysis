@@ -45,7 +45,8 @@ AdmissionAnalysis — это программное обеспечение дл�
 ### Backend
 - **ASP.NET Core MVC** (.NET 10) — веб-приложение, UI
 - **Python 3.12** — аналитический движок
-- **FastAPI** — Python API-сервис (планируется; базовая реализация уже присутствует в `src/analysis/api_manager.py`)
+- **FastAPI** — Python API-сервис с HTTP API для интеграции (`src/analysis/api_manager.py`)
+- **AnalysisService** — C# обёртка для вызова Python API из ASP.NET (`src/web/Services/AnalysisService.cs`)
 
 ### Python библиотеки
 - `pandas` — обработка данных
@@ -68,6 +69,7 @@ AdmissionAnalysis/
 │   ├── web/                    # ASP.NET Core веб-приложение
 │   │   └── WebApp/
 │   │       ├── Controllers/    # MVC контроллеры
+│   │       ├── Services/       # Сервисы (AnalysisService для вызова Python API)
 │   │       ├── Views/          # Razor представления
 │   │       └── wwwroot/        # Статические файлы (CSS, JS)
 │   │
@@ -143,6 +145,15 @@ pip install -r requirements.txt
 cd src/web/WebApp
 dotnet restore
 dotnet build
+```
+
+**Важно:** Убедитесь, что в `Program.cs` зарегистрирован `AnalysisService`:
+
+```csharp
+builder.Services.AddHttpClient<AnalysisService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8000");
+});
 ```
 
 ### Шаг 4: Настройка переменных окружения
@@ -238,6 +249,83 @@ curl "http://127.0.0.1:8000/api/generate_pdf_report?date_folders=01,02,03,04&tar
 Примечание по данным:
 - В текущей конфигурации `load_csv_from_uploads()` использует **mock-режим** (`data/mock/<date_folder>`), а строка для `data/uploads/<date_folder>` закомментирована. Подробности см. `docs/API_MANAGER_API.txt`.
 
+### C# интеграция (AnalysisService)
+
+Для удобной работы с Python API из ASP.NET создан сервис `AnalysisService` в `src/web/Services/AnalysisService.cs`.
+
+#### Регистрация в Program.cs
+
+```csharp
+// Регистрация HttpClient с AnalysisService
+builder.Services.AddHttpClient<AnalysisService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8000");
+});
+```
+
+#### Использование в контроллере
+
+```csharp
+public class AnalysisController : Controller
+{
+    private readonly AnalysisService _analysisService;
+
+    public AnalysisController(AnalysisService analysisService)
+    {
+        _analysisService = analysisService;
+    }
+
+    // Проверка здоровья API
+    public async Task<IActionResult> Health()
+    {
+        var result = await _analysisService.GetHealthAsync();
+        return Json(result);
+    }
+
+    // Анализ одного дня
+    public async Task<IActionResult> AnalyzeDay(string day)
+    {
+        var result = await _analysisService.AnalyzeAsync(day);
+        return Json(result);
+    }
+
+    // Анализ всех дней сразу (параллельно)
+    public async Task<IActionResult> AnalyzeAll()
+    {
+        var results = await _analysisService.AnalyzeAllDaysAsync();
+        return Json(results);
+    }
+
+    // Генерация PDF отчёта
+    public async Task<IActionResult> GeneratePdf()
+    {
+        var result = await _analysisService.GeneratePdfReportAsync(
+            dateFolders: "01,02,03,04",
+            targetDate: "04"
+        );
+        return Json(result);
+    }
+
+    // Список программ
+    public async Task<IActionResult> Programs()
+    {
+        var result = await _analysisService.GetProgramsAsync();
+        return Json(result);
+    }
+}
+```
+
+#### Доступные методы AnalysisService
+
+| Метод | Описание |
+|-------|----------|
+| `GetHealthAsync()` | Проверка здоровья Python API |
+| `GetUploadsAsync()` | Список загруженных папок |
+| `GetProgramsAsync()` | Список образовательных программ |
+| `AnalyzeAsync(dateFolder, ...)` | Анализ данных за один день |
+| `AnalyzeAllDaysAsync(...)` | Параллельный анализ всех дней (01-04) |
+| `GeneratePdfReportAsync(...)` | Генерация PDF отчёта |
+
 #### Анализ динамики по дням
 
 ```python
@@ -261,6 +349,8 @@ for prog, dyn in dynamics.items():
 
 ### Запуск веб-приложения
 
+**Важно:** Сначала запустите Python API (см. выше), затем веб-приложение.
+
 ```bash
 cd src/web/WebApp
 dotnet run
@@ -268,6 +358,11 @@ dotnet run
 # Приложение доступно по адресу:
 # https://localhost:5001
 # Также в проекте настроен запуск по HTTP на http://localhost:5002 (см. makefile / launchSettings.json)
+```
+
+**Для одновременного запуска** обоих сервисов используйте:
+```bash
+make dev    # Запускает API (8000) и Web (5002) параллельно
 ```
 
 ### Быстрый запуск через makefile (рекомендуется)
@@ -487,6 +582,6 @@ docs/AdmissionManager_CLASS.txt
 rawer470@gmail.com
 ---
 
-**Версия:** 1.0  
-**Последнее обновление:** Декабрь 2025
+**Версия:** 1.1
+**Последнее обновление:** Январь 2026
 
