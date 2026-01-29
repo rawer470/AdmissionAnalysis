@@ -21,17 +21,17 @@ body{
 
 /* ===== Page Layout ===== */
 
-.page{
-  padding: 28px;
-  display: block;          /* убираем grid-центрирование */
-}
-
 /* .page{
+  padding: 28px;
+  display: block;          убираем grid-центрирование
+} */
+
+.page{
   min-height: 100%;
   display: grid;
   place-items: center;
   padding: 28px;
-} */
+}
 
 .card{
   width: min(760px, 100%);
