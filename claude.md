@@ -104,14 +104,16 @@ Report must include:
 - **Charts**: matplotlib
 - **Data Processing**: csv (standard library), pandas (available)
 
-### Web Frontend (src/web/WebApp/)
-- **Runtime**: .NET 9/10
+### Web Frontend (src/web/)
+- **Runtime**: .NET 10
 - **Framework**: ASP.NET Core MVC
 - **UI Libraries**: Bootstrap, jQuery
+- **Database**: SQLite with Entity Framework Core
 
-### Integration
+### Integration Layer (src/web/Services/)
+- **AnalysisService**: C# HTTP client wrapper for Python API
 - Python service: `http://localhost:8000`
-- ASP.NET calls Python API via HTTP (CORS enabled)
+- ASP.NET calls Python API via `AnalysisService`
 - Communication format: JSON
 
 ---
@@ -128,11 +130,16 @@ Report must include:
 │   │   ├── requirements.txt       # Python dependencies
 │   │   └── testLogic/             # Test files
 │   │
-│   └── web/WebApp/                # ASP.NET MVC application
-│       ├── Controllers/
-│       ├── Views/
-│       ├── Program.cs
-│       └── WebApp.csproj
+│   └── web/                       # ASP.NET MVC application
+│       ├── Controllers/           # MVC Controllers
+│       ├── Services/              # Service layer
+│       │   └── AnalysisService.cs # HTTP client for Python API
+│       ├── Models/                # Data models
+│       ├── Views/                 # Razor views
+│       ├── Data/                  # EF Core DbContext
+│       ├── wwwroot/               # Static files (CSS, JS)
+│       ├── Program.cs             # Application entry point
+│       └── WebApp.csproj          # Project file
 │
 ├── data/                          # Data directory (gitignored)
 │   ├── uploads/                   # User-uploaded CSV files
@@ -147,6 +154,7 @@ Report must include:
 │   └── tmp/
 │
 ├── docs/                          # Documentation
+├── makefile                       # Build/run commands
 ├── claude.md                      # This file
 └── env.example
 ```
@@ -221,6 +229,54 @@ Manages report loading and PDF generation.
 - Dynamics chart (if multiple dates)
 - Enrolled applicants lists (ID + total)
 - Statistics per program (applications/enrolled by priority)
+
+---
+
+### AnalysisService (src/web/Services/AnalysisService.cs)
+
+C# HTTP client wrapper for calling Python FastAPI endpoints from ASP.NET.
+
+**Constructor**:
+```csharp
+AnalysisService(HttpClient httpClient, string baseUrl = "http://localhost:8000")
+```
+
+**Public Methods**:
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `GetHealthAsync()` | `JsonDocument` | Check Python API health |
+| `GetUploadsAsync()` | `JsonDocument` | List uploaded folders |
+| `GetProgramsAsync()` | `JsonDocument` | Get program codes and names |
+| `AnalyzeAsync(dateFolder, ...)` | `JsonDocument` | Analyze single day |
+| `AnalyzeAllDaysAsync(...)` | `Dictionary<string, JsonDocument>` | Analyze all days in parallel |
+| `GeneratePdfReportAsync(...)` | `JsonDocument` | Generate PDF report |
+
+**Registration in Program.cs**:
+```csharp
+builder.Services.AddHttpClient<AnalysisService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8000");
+});
+```
+
+**Usage Example**:
+```csharp
+public class AnalysisController : Controller
+{
+    private readonly AnalysisService _analysisService;
+
+    public AnalysisController(AnalysisService analysisService)
+    {
+        _analysisService = analysisService;
+    }
+
+    public async Task<IActionResult> AnalyzeAll()
+    {
+        var results = await _analysisService.AnalyzeAllDaysAsync();
+        return Json(results);
+    }
+}
+```
 
 ---
 
@@ -335,8 +391,16 @@ python api_manager.py
 
 ### ASP.NET Application
 ```bash
-cd src/web/WebApp
+cd src/web
 dotnet run
+# Runs on http://localhost:5002
+```
+
+### Both Services (Recommended)
+```bash
+make dev
+# API: http://localhost:8000
+# Web: http://localhost:5002
 ```
 
 ---
@@ -378,6 +442,12 @@ upload_path = MOCK_DIR / date_folder
 upload_path = UPLOADS_DIR / date_folder
 ```
 
+### Adding New Method to AnalysisService
+1. Add async method in `src/web/Services/AnalysisService.cs`
+2. Use `_httpClient.GetAsync()` or `PostAsync()`
+3. Return `JsonDocument` or typed response
+4. Handle errors with `response.EnsureSuccessStatusCode()`
+
 ---
 
 ## Testing
@@ -403,6 +473,8 @@ python testLogic/test_admission.py
 3. **Cyrillic in PDF**: Need Arial Unicode font
 4. **stats.json missing**: Run /api/analyze/{date} first
 5. **NEDOBOR when expecting score**: Not enough applicants with consent=True
+6. **AnalysisService connection refused**: Ensure Python API is running on port 8000
+7. **CS5001 error**: Wrong .csproj path - use `src/web/WebApp.csproj` (not `src/web/WebApp/WebApp.csproj`)
 
 ---
 

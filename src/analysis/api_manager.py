@@ -70,10 +70,10 @@ def load_csv_from_uploads(date_folder: str) -> Dict[str, list]:
         - date_PM.csv, date_IVT.csv и т.д.
     """
     #ДЛЯ РЕАЛЬНОГО ТЕСТА
-    #upload_path = UPLOADS_DIR / date_folder
+    upload_path = UPLOADS_DIR / date_folder
 
     #ДЛЯ МОК ТЕСТА
-    upload_path = MOCK_DIR / date_folder
+    #upload_path = MOCK_DIR / date_folder
     
     if not upload_path.exists():
         raise FileNotFoundError(f"Папка {date_folder} не найдена в uploads")
