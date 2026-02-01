@@ -40,4 +40,11 @@ public interface IApplicantsCurrentRepository
     /// <param name="ct">Нужен для корректной остановки работы, если она прервется</param>
     /// <returns></returns>
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Нужен для получения списка кого-то без его отслеживания(без возможности изменения объектов). Работает быстрее GetAllAsync
+    /// </summary>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public IQueryable<ApplicantsCurrent> AsNoTracking(CancellationToken ct);
 }

@@ -31,4 +31,7 @@ public sealed class ApplicantsCurrentRepository : IApplicantsCurrentRepository
 
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct) =>
         await _db.Database.BeginTransactionAsync(ct);
+
+    public IQueryable<ApplicantsCurrent> AsNoTracking(CancellationToken ct) =>
+        _db.ApplicantsCurrent.AsNoTracking();
 }

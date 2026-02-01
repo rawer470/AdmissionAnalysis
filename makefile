@@ -6,9 +6,11 @@ WEB_CSPROJ := src/web/WebApp.csproj
 PY_DIR     := src/analysis
 
 # -------- Python / venv --------
+ROOT   := $(CURDIR)
 VENV   ?= .venv
-PY     ?= $(VENV)/bin/python
-PIP    ?= $(VENV)/bin/pip
+PY     ?= $(ROOT)/$(VENV)/bin/python
+# Используем `python -m pip`, чтобы шебанг с путём содержащим '#' не ломал запуск
+PIP    ?= $(PY) -m pip
 
 # -------- Service config --------
 API_HOST ?= 127.0.0.1

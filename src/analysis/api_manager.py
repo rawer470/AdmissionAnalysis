@@ -69,14 +69,14 @@ def load_csv_from_uploads(date_folder: str) -> Dict[str, list]:
     или
         - date_PM.csv, date_IVT.csv и т.д.
     """
-    #ДЛЯ РЕАЛЬНОГО ТЕСТА
+    # Сначала ищем реальные загрузки, иначе автоматически падаем назад на мок-данные
     upload_path = UPLOADS_DIR / date_folder
-
-    #ДЛЯ МОК ТЕСТА
-    #upload_path = MOCK_DIR / date_folder
-    
     if not upload_path.exists():
-        raise FileNotFoundError(f"Папка {date_folder} не найдена в uploads")
+        mock_path = MOCK_DIR / date_folder
+        if mock_path.exists():
+            upload_path = mock_path
+        else:
+            raise FileNotFoundError(f"Папка {date_folder} не найдена ни в uploads, ни в mock")
     
     data = {}
     program_codes = {'pm': 'PM', 'ivt': 'IVT', 'itss': 'ITSS', 'ib': 'IB'}
@@ -91,7 +91,16 @@ def load_csv_from_uploads(date_folder: str) -> Dict[str, list]:
         csv_file = csv_files[0]  # берём первый найденный
         
         with open(csv_file, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
+            sample = f.read(2048)
+            f.seek(0)
+            try:
+                dialect = csv.Sniffer().sniff(sample, delimiters=";,")
+            except csv.Error:
+                # fallback: assume semicolon (часто в выгрузках)
+                dialect = csv.excel
+                dialect.delimiter = ';'
+
+            reader = csv.DictReader(f, dialect=dialect)
             applicants = []
             
             for row in reader:
@@ -328,4 +337,3 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
-

@@ -35,5 +35,15 @@ namespace WebApp.Controllers
             var results = await _analysisService.AnalyzeAllDaysAsync();
             return Json(results);
         }
+
+        /// <summary>
+        /// Параллельный анализ всех дней (01-04) с возвратом JSON.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetPdf()
+        {
+            var res = await _analysisService.GeneratePdfReportAsync("01,02,03,04", "04");
+            return View();
+        }
     }
 }

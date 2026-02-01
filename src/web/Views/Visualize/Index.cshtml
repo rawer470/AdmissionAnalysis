@@ -1,0 +1,167 @@
+﻿@{
+    ViewData["Title"] = "Визуализация";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/visualize.css" asp-append-version="true" />
+}
+
+<main class="viz-page">
+    <section class="viz-card">
+        <header class="viz-header">
+            <div>
+                <p class="eyebrow">Данные абитуриентов</p>
+                <h1>Визуализация и фильтрация</h1>
+                <p class="muted">Фильтруйте, сортируйте и листайте результаты в реальном времени.</p>
+            </div>
+            <div class="badge">Live</div>
+        </header>
+
+        <form id="filters" class="viz-filters">
+            <div class="row">
+                <label>Программа
+                    <select name="Program">
+                        <option value="">Все</option>
+                        <option value="PM">ПМ</option>
+                        <option value="IVT">ИВТ</option>
+                        <option value="ITSS">ИТСС</option>
+                        <option value="IB">ИБ</option>
+                    </select>
+                </label>
+
+                <label>Согласие
+                    <select name="Consent">
+                        <option value="">Все</option>
+                        <option value="true">Да</option>
+                        <option value="false">Нет</option>
+                    </select>
+                </label>
+
+                <label>Приоритет
+                    <input type="number" name="Priority" min="1" max="10" placeholder="Любой" />
+                </label>
+
+                <label>Искать по ID
+                    <input type="text" name="Search" placeholder="Напр. 1234" />
+                </label>
+            </div>
+
+            <div class="row">
+                <label>Баллы от
+                    <input type="number" name="MinTotal" placeholder="0" />
+                </label>
+                <label>Баллы до
+                    <input type="number" name="MaxTotal" placeholder="300" />
+                </label>
+
+                <label>Сортировка
+                    <select name="SortBy">
+                        <option value="total">Total</option>
+                        <option value="priority">Priority</option>
+                        <option value="applicantid">ApplicantId</option>
+                        <option value="program">Program</option>
+                    </select>
+                </label>
+                <label class="checkbox">
+                    <input class="toggle-hidden noselect" type="hidden" name="Desc" value="false" />
+                    <input class="toggle noselect" type="checkbox" name="Desc" value="true" checked /> По убыванию
+                </label>
+            </div>
+
+            <div class="row pagination-row">
+                <label>Страница
+                    <input type="number" name="Page" value="1" min="1" />
+                </label>
+                <label>Размер страницы
+                    <input type="number" name="PageSize" value="50" min="1" max="500" />
+                </label>
+                <button type="submit" class="btn primary">Обновить</button>
+            </div>
+        </form>
+
+        <div class="viz-toolbar">
+            <div id="total" class="muted"></div>
+            <div class="pager">
+                <button type="button" id="prevBtn" class="btn ghost">◀ Назад</button>
+                <button type="button" id="nextBtn" class="btn ghost">Вперед ▶</button>
+                <div class="goto">
+                    <span>Перейти на</span>
+                    <input type="number" id="gotoPage" value="1" min="1" />
+                    <button type="button" id="goBtn" class="btn ghost">Go</button>
+                </div>
+                <span id="pageInfo" class="muted"></span>
+            </div>
+        </div>
+
+        <div class="viz-table">
+            <table id="grid">
+                <thead>
+                    <tr>
+                        <th>ApplicantId</th>
+                        <th>Program</th>
+                        <th>Consent</th>
+                        <th>Priority</th>
+                        <th>PhysicsIct</th>
+                        <th>Russian</th>
+                        <th>Math</th>
+                        <th>Individual</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+@section Scripts {
+<script>
+    const form = document.getElementById('filters');
+    const tbody = document.querySelector('#grid tbody');
+    const totalEl = document.getElementById('total');
+    const pageInput = form.elements['Page'];
+    const pageSizeInput = form.elements['PageSize'];
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const gotoInput = document.getElementById('gotoPage');
+    const goBtn = document.getElementById('goBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    async function load(pageOverride) {
+        if (pageOverride !== undefined) pageInput.value = pageOverride;
+        const params = new URLSearchParams(new FormData(form));
+        const res = await fetch('/Visualize/GetData?' + params.toString());
+        if (!res.ok) { alert('Error ' + res.status); return; }
+        const data = await res.json();
+
+        const page = Math.max(1, parseInt(pageInput.value) || 1);
+        const pageSize = Math.max(1, parseInt(pageSizeInput.value) || 50);
+        const totalPages = Math.max(1, Math.ceil(data.totalCount / pageSize));
+
+        pageInput.value = Math.min(page, totalPages);
+        gotoInput.value = pageInput.value;
+        prevBtn.disabled = page <= 1;
+        nextBtn.disabled = page >= totalPages;
+        pageInfo.textContent = `Стр. ${page} / ${totalPages}`;
+
+        totalEl.textContent = `Найдено: ${data.totalCount}`;
+        tbody.innerHTML = data.items.map(row => `
+        <tr>
+          <td>${row.applicantId}</td><td>${row.program}</td><td>${row.consent}</td>
+          <td>${row.priority}</td><td>${row.physicsIct}</td><td>${row.russian}</td>
+          <td>${row.math}</td><td>${row.individual}</td><td>${row.total}</td>
+        </tr>`).join('');
+    }
+
+    form.addEventListener('submit', (e) => { e.preventDefault(); load(1); });
+    prevBtn.addEventListener('click', () => load(Math.max(1, (parseInt(pageInput.value) || 1) - 1)));
+    nextBtn.addEventListener('click', () => load((parseInt(pageInput.value) || 1) + 1));
+    goBtn.addEventListener('click', () => {
+        const target = Math.max(1, parseInt(gotoInput.value) || 1);
+        load(target);
+    });
+
+    // initial load
+    load(1);
+</script>
+}

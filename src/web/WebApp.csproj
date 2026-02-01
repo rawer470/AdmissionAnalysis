@@ -32,6 +32,7 @@
   <ItemGroup>
     <Folder Include="Data/Repositories/" />
     <Folder Include="Views/Admission/" />
+    <Folder Include="Views/Visualize/" />
   </ItemGroup>
 
 </Project>
