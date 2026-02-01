@@ -82,7 +82,7 @@ public class ImportService
 
         await _repo.SaveChangesAsync(ct);
 
-        // Закрытие транзакции(коммит всех изменений) см. метод BeginTransactionAsync для более подроюной информации
+        // Закрытие транзакции(коммит всех изменений) см. метод BeginTransactionAsync для более подробной информации
         await tx.CommitAsync(ct);
 
         System.Console.WriteLine($"DELETED: {deleted}, INSERTED: {inserted}, UPDATED: {updated}");
