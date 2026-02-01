@@ -40,7 +40,7 @@ body {
    CSS Variables (global tokens)
    ========================================================= */
 
-:root {
+/* :root {
   --bg: #0b1220;
 
   --text: #eaf0ff;
@@ -51,7 +51,7 @@ body {
 
   --accent: #4f8cff;
   --accent2: #63d1c6;
-}
+} */
 
 /* =========================================================
    Links (global, neutral)

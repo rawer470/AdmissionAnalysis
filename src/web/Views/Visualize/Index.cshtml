@@ -69,9 +69,9 @@
             </div>
 
             <div class="row pagination-row">
-                <label>Страница
+                @* <label>Страница
                     <input type="number" name="Page" value="1" min="1" />
-                </label>
+                </label> *@
                 <label>Размер страницы
                     <input type="number" name="PageSize" value="50" min="1" max="500" />
                 </label>
@@ -119,7 +119,7 @@
     const form = document.getElementById('filters');
     const tbody = document.querySelector('#grid tbody');
     const totalEl = document.getElementById('total');
-    const pageInput = form.elements['Page'];
+    @* const pageInput = form.elements['Page']; *@
     const pageSizeInput = form.elements['PageSize'];
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -138,7 +138,7 @@
         const pageSize = Math.max(1, parseInt(pageSizeInput.value) || 50);
         const totalPages = Math.max(1, Math.ceil(data.totalCount / pageSize));
 
-        pageInput.value = Math.min(page, totalPages);
+        @* pageInput.value = Math.min(page, totalPages); *@
         gotoInput.value = pageInput.value;
         prevBtn.disabled = page <= 1;
         nextBtn.disabled = page >= totalPages;
