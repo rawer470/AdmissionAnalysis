@@ -18,6 +18,7 @@
         </header>
 
         <form id="filters" class="viz-filters">
+            <input type="hidden" name="Page" value="1" />
             <div class="row">
                 <label>Программа
                     <select name="Program">
@@ -67,15 +68,11 @@
                     <input class="toggle noselect" type="checkbox" name="Desc" value="true" checked /> По убыванию
                 </label>
             </div>
-
-            <div class="row pagination-row">
-                @* <label>Страница
-                    <input type="number" name="Page" value="1" min="1" />
-                </label> *@
+            <div class="row">
                 <label>Размер страницы
                     <input type="number" name="PageSize" value="50" min="1" max="500" />
                 </label>
-                <button type="submit" class="btn primary">Обновить</button>
+                <button type="submit" class="btn primary action-btn">Обновить</button>
             </div>
         </form>
 
@@ -87,7 +84,7 @@
                 <div class="goto">
                     <span>Перейти на</span>
                     <input type="number" id="gotoPage" value="1" min="1" />
-                    <button type="button" id="goBtn" class="btn ghost">Go</button>
+                    <button type="button" id="goBtn" class="btn ghost">Перейти</button>
                 </div>
                 <span id="pageInfo" class="muted"></span>
             </div>
@@ -111,6 +108,19 @@
                 <tbody></tbody>
             </table>
         </div>
+
+        <div class="viz-toolbar bottom-toolbar">
+            <div class="pager">
+                <button type="button" class="btn ghost prevBtn2">◀ Назад</button>
+                <button type="button" class="btn ghost nextBtn2">Вперед ▶</button>
+                <div class="goto">
+                    <span>Перейти на</span>
+                    <input type="number" class="gotoPage2" value="1" min="1" />
+                    <button type="button" class="btn ghost goBtn2">Перейти</button>
+                </div>
+                <span class="muted pageInfo2"></span>
+            </div>
+        </div>
     </section>
 </main>
 
@@ -127,22 +137,54 @@
     const goBtn = document.getElementById('goBtn');
     const pageInfo = document.getElementById('pageInfo');
 
-    async function load(pageOverride) {
+    const prevBtn2 = document.querySelector('.prevBtn2');
+    const nextBtn2 = document.querySelector('.nextBtn2');
+    const gotoInput2 = document.querySelector('.gotoPage2');
+    const goBtn2 = document.querySelector('.goBtn2');
+    const pageInfo2 = document.querySelector('.pageInfo2');
+
+    let lastTotalPages = null;
+
+    async function load(pageOverride, allowRetry = true) {
         if (pageOverride !== undefined) pageInput.value = pageOverride;
+
+        // Предварительная коррекция по кэшу, чтобы не делать лишний запрос
+        if (lastTotalPages !== null) {
+            const clamped = Math.min(Math.max(1, parseInt(pageInput.value) || 1), lastTotalPages);
+            pageInput.value = clamped;
+            gotoInput.value = clamped;
+            if (gotoInput2) gotoInput2.value = clamped;
+        }
+
         const params = new URLSearchParams(new FormData(form));
         const res = await fetch('/Visualize/GetData?' + params.toString());
         if (!res.ok) { alert('Error ' + res.status); return; }
         const data = await res.json();
 
-        const page = Math.max(1, parseInt(pageInput.value) || 1);
+        const pageRequested = Math.max(1, parseInt(pageInput.value) || 1);
         const pageSize = Math.max(1, parseInt(pageSizeInput.value) || 50);
         const totalPages = Math.max(1, Math.ceil(data.totalCount / pageSize));
+        lastTotalPages = totalPages;
 
-        @* pageInput.value = Math.min(page, totalPages); *@
+        const page = Math.min(pageRequested, totalPages);
+        if (page !== pageRequested && allowRetry) {
+            // если запросили вне диапазона — корректируем и грузим один раз нужную страницу
+            pageInput.value = page;
+            gotoInput.value = page;
+            if (gotoInput2) gotoInput2.value = page;
+            return load(page, false);
+        }
+        pageInput.value = page;
         gotoInput.value = pageInput.value;
+        if (gotoInput2) gotoInput2.value = pageInput.value;
         prevBtn.disabled = page <= 1;
         nextBtn.disabled = page >= totalPages;
+        if (prevBtn2 && nextBtn2) {
+            prevBtn2.disabled = prevBtn.disabled;
+            nextBtn2.disabled = nextBtn.disabled;
+        }
         pageInfo.textContent = `Стр. ${page} / ${totalPages}`;
+        if (pageInfo2) pageInfo2.textContent = pageInfo.textContent;
 
         totalEl.textContent = `Найдено: ${data.totalCount}`;
         tbody.innerHTML = data.items.map(row => `
@@ -158,6 +200,13 @@
     nextBtn.addEventListener('click', () => load((parseInt(pageInput.value) || 1) + 1));
     goBtn.addEventListener('click', () => {
         const target = Math.max(1, parseInt(gotoInput.value) || 1);
+        load(target);
+    });
+
+    if (prevBtn2) prevBtn2.addEventListener('click', () => load(Math.max(1, (parseInt(pageInput.value) || 1) - 1)));
+    if (nextBtn2) nextBtn2.addEventListener('click', () => load((parseInt(pageInput.value) || 1) + 1));
+    if (goBtn2) goBtn2.addEventListener('click', () => {
+        const target = Math.max(1, parseInt(gotoInput2.value) || 1);
         load(target);
     });
 
