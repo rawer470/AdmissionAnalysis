@@ -15,6 +15,16 @@
 
         <form class="form" method="post" enctype="multipart/form-data">
             <div class="field">
+                <label class="field__label" for="DateFolder">День приёмной кампании</label>
+                <select class="select" id="DateFolder" name="DateFolder">
+                    <option value="01">01 августа</option>
+                    <option value="02">02 августа</option>
+                    <option value="03">03 августа</option>
+                    <option value="04">04 августа</option>
+                </select>
+            </div>
+
+            <div class="field">
                 <label class="field__label" for="Ib">IB (.csv)</label>
                 <input class="file" id="Ib" type="file" name="Ib" accept=".csv">
                 <label class="fileBtn" for="Ib">Выбрать файл</label>

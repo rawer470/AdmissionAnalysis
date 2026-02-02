@@ -7,8 +7,31 @@ namespace WebApp.Services;
 public class ImportService
 {
     private readonly IApplicantsCurrentRepository _repo;
-    public ImportService(IApplicantsCurrentRepository repo) => _repo = repo;
+    private readonly IWebHostEnvironment _env;
+
+    public ImportService(IApplicantsCurrentRepository repo, IWebHostEnvironment env)
+    {
+        _repo = repo;
+        _env = env;
+    }
+
     private static (ProgramCode p, int id) Key(ProgramCode p, int id) => (p, id); // для упрощения
+
+    /// <summary>
+    /// Сохраняет загруженный файл в data/uploads/{dateFolder}/
+    /// </summary>
+    private async Task SaveFileToUploadsAsync(IFormFile file, string dateFolder, string programCode, CancellationToken ct)
+    {
+        // Путь: src/web/../data/uploads/{dateFolder}/
+        var uploadsPath = Path.Combine(_env.ContentRootPath, "..", "..", "data", "uploads", dateFolder);
+        Directory.CreateDirectory(uploadsPath);
+
+        var fileName = $"{dateFolder}-08_{programCode}.csv";
+        var filePath = Path.Combine(uploadsPath, fileName);
+
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream, ct);
+    }
 
     /// <summary>
     /// Метод-помощник для склеивания текущего дня(List<ApplicantsCurrent>) с предыдущими и записью этого в БД
@@ -93,6 +116,7 @@ public class ImportService
     /// <summary>
     /// Метод для склеивания текущего дня(csv) с предыдущими и записью этого в БД
     /// </summary>
+    /// <param name="dateFolder">папка с датой (01, 02, 03, 04)</param>
     /// <param name="pm">csv для ПМ</param>
     /// <param name="ivt">csv для ИВТ</param>
     /// <param name="itss">csv для ИТСС</param>
@@ -100,9 +124,16 @@ public class ImportService
     /// <param name="ct"></param>
     /// <returns></returns>
     public async Task<(int deleted, int inserted, int updated, int snapshotRows)> ImportDayAsync(
-    IFormFile pm, IFormFile ivt, IFormFile itss, IFormFile ib,
+    string dateFolder, IFormFile pm, IFormFile ivt, IFormFile itss, IFormFile ib,
     CancellationToken ct)
     {
+        // 1. Сохраняем файлы в data/uploads/{dateFolder}/ для Python API
+        await SaveFileToUploadsAsync(pm, dateFolder, "PM", ct);
+        await SaveFileToUploadsAsync(ivt, dateFolder, "IVT", ct);
+        await SaveFileToUploadsAsync(itss, dateFolder, "ITSS", ct);
+        await SaveFileToUploadsAsync(ib, dateFolder, "IB", ct);
+
+        // 2. Парсим и сохраняем в БД
         var snap = new List<ApplicantsCurrent>(140_000);
 
         using (var s = pm.OpenReadStream()) snap.AddRange(ApplicantsCsvParser.ParseCsv(s, ProgramCode.PM));
