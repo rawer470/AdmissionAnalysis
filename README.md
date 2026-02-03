@@ -274,9 +274,8 @@ AdmissionAnalysis/
 │   ├── uploads/                       # Загруженные пользователем
 │   └── reports/                       # Результаты: stats.json, PDF, PNG
 │
-├── docs/                              # ТЗ
+├── docs/                              # Подробная документация отдельных частей репозитория
 ├── makefile
-├── CLAUDE.md
 └── README.md
 ```
 
