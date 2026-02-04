@@ -19,16 +19,16 @@
 <body class="layout">
     <header class="app-header">
         <div class="app-header__inner">
-            <a class="app-logo" asp-controller="Admission" asp-action="Index">
+            <a class="app-logo" asp-controller="Admission" asp-action="UploadCsv">
                 Admission <span>Analyzer</span>
             </a>
 
             <nav class="app-nav">
-                <a class="app-nav__link" asp-controller="Admission" asp-action="Index">
-                    Результат
-                </a>
                 <a class="app-nav__link" asp-controller="Admission" asp-action="UploadCsv">
                     Загрузка
+                </a>
+                <a class="app-nav__link" asp-controller="Admission" asp-action="Index">
+                    Результат
                 </a>
                 <a class="app-nav__link" asp-controller="Visualize" asp-action="Index">
                     Посмотреть списки
