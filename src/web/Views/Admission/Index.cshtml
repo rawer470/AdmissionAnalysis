@@ -43,6 +43,15 @@
 
         <div class="actions">
             <a class="btnLink" asp-action="UploadCsv">Загрузить новые CSV</a>
+            <form asp-action="Clear" method="post" style="display:inline-block;">
+                <button type="submit" class="btnLink btnLink--danger">Очистить БД</button>
+                @Html.AntiForgeryToken()
+            </form>
         </div>
+
+        @if (TempData["Cleared"] is bool cleared && cleared)
+        {
+            <p class="muted" style="margin-top:10px;">База данных очищена.</p>
+        }
     </section>
 </main>

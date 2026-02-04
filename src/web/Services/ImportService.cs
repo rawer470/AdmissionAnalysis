@@ -17,6 +17,8 @@ public class ImportService
 
     private static (ProgramCode p, int id) Key(ProgramCode p, int id) => (p, id); // для упрощения
 
+    public Task ClearAsync(CancellationToken ct) => _repo.ClearAsync(ct);
+
     /// <summary>
     /// Сохраняет загруженный файл в data/uploads/{dateFolder}/
     /// </summary>

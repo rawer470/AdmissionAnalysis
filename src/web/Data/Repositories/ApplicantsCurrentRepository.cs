@@ -34,4 +34,9 @@ public sealed class ApplicantsCurrentRepository : IApplicantsCurrentRepository
 
     public IQueryable<ApplicantsCurrent> AsNoTracking(CancellationToken ct) =>
         _db.ApplicantsCurrent.AsNoTracking();
+
+    public async Task ClearAsync(CancellationToken ct)
+    {
+        await _db.ApplicantsCurrent.ExecuteDeleteAsync(ct);
+    }
 }

@@ -77,6 +77,25 @@ public class AdmissionController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // Для перехода на Политику Конфедециальности
+    /// <summary>
+    /// Для перехода на Политику Конфедециальности
+    /// </summary>
+    /// <returns></returns>
     public IActionResult Privacy() => View(); 
+
+    /// <summary>
+    /// Полная очистка таблицы ApplicantsCurrent (испытание №2а)
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Clear(CancellationToken ct)
+    {
+        await _import.ClearAsync(ct);
+        TempData["Cleared"] = true;
+        TempData["Deleted"] = 0;
+        TempData["Inserted"] = 0;
+        TempData["Updated"] = 0;
+        TempData["SnapshotRows"] = 0;
+        return RedirectToAction(nameof(Index));
+    }
 }

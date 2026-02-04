@@ -19,6 +19,12 @@ namespace WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Вспомогательный метод, вызываемый из Index.cshtml через fetch-запрос для получения людей из БД в формате json
+        /// </summary>
+        /// <param name="visualizeQuery"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> GetData([FromQuery] VisualizeQueryDto visualizeQuery, CancellationToken ct)
         {

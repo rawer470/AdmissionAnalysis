@@ -66,7 +66,7 @@ public class VisualizeService
     }
 
     /// <summary>
-    /// Внутренний метод для применения сортировки по чему-либо(enum лень было добавлять)
+    /// Внутренний метод для применения сортировки по чему-либо(enum лень было добавлять :) )
     /// </summary>
     /// <param name="applicants"></param>
     /// <param name="sortBy"></param>

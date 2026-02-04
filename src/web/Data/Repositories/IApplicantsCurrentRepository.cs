@@ -47,4 +47,9 @@ public interface IApplicantsCurrentRepository
     /// <param name="ct"></param>
     /// <returns></returns>
     public IQueryable<ApplicantsCurrent> AsNoTracking(CancellationToken ct);
+
+    /// <summary>
+    /// Полностью очистить таблицу ApplicantsCurrent
+    /// </summary>
+    Task ClearAsync(CancellationToken ct);
 }

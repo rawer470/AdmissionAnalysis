@@ -128,6 +128,12 @@ body{
   box-shadow: 0 0 0 3px rgba(79,140,255,.35), 0 12px 30px rgba(79,140,255,.25);
 }
 
+.btnLink--danger{
+  background: linear-gradient(90deg, #ff6b6b, #ff9f7f);
+  box-shadow: 0 12px 30px rgba(255,107,107,.25);
+  color: #2d0f0f;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 520px){
   .stats__row{
