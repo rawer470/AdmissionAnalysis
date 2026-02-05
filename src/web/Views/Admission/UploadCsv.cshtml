@@ -13,7 +13,7 @@
             <p class="subtitle">Выбери 4 CSV-файла и отправь.</p>
         </header>
 
-        <form class="form" method="post" enctype="multipart/form-data">
+        <form class="form" asp-action="UploadCsv" method="post" enctype="multipart/form-data">
             <div class="field">
                 <label class="field__label" for="DateFolder">День приёмной кампании</label>
                 <select class="select" id="DateFolder" name="DateFolder">

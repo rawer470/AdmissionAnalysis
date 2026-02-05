@@ -16,7 +16,7 @@ public class AdmissionController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public IActionResult ResultUploaded()
     {
         var vm = new CsvStatsVm
         {
@@ -73,8 +73,7 @@ public class AdmissionController : Controller
         TempData["Inserted"] = dataFromCsv.inserted;
         TempData["Updated"] = dataFromCsv.updated;
         TempData["SnapshotRows"] = dataFromCsv.snapshotRows;
-        TempData["DateFolder"] = model.DateFolder;
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(ResultUploaded));
     }
 
     /// <summary>
@@ -96,6 +95,6 @@ public class AdmissionController : Controller
         TempData["Inserted"] = 0;
         TempData["Updated"] = 0;
         TempData["SnapshotRows"] = 0;
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(ResultUploaded));
     }
 }

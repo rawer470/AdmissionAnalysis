@@ -48,7 +48,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Admission}/{action=Index}/{id?}")
+    pattern: "{controller=Admission}/{action=UploadCsv}/{id?}")
     .WithStaticAssets();
 
 
