@@ -34,10 +34,22 @@ public interface IApplicantsCurrentRepository
 
     /// <summary>
     /// начало транзакции. Делает все изменения после него атомарными. Без него - каждый SaveChangesAsync() — своя собственная транзакция.
-    /// _______________________________________________________________________________________________________________________________________
+    /// ------------------------------
     /// P. S. атомарность — это свойство операции, при котором она выполняется целиком или не выполняется вовсе.
     /// </summary>
     /// <param name="ct">Нужен для корректной остановки работы, если она прервется</param>
     /// <returns></returns>
     Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct);
+
+    /// <summary>
+    /// Нужен для получения списка кого-то без его отслеживания(без возможности изменения объектов). Работает быстрее GetAllAsync
+    /// </summary>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public IQueryable<ApplicantsCurrent> AsNoTracking(CancellationToken ct);
+
+    /// <summary>
+    /// Полностью очистить таблицу ApplicantsCurrent
+    /// </summary>
+    Task ClearAsync(CancellationToken ct);
 }

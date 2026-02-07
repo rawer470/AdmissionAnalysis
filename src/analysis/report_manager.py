@@ -319,7 +319,9 @@ class ReportManager:
         # c. Динамика проходного балла (графики)
         if len(self.reports) > 1:
             content.append(Paragraph("ДИНАМИКА ПРОХОДНЫХ БАЛЛОВ", heading_style))
-            chart_img = self._create_dynamics_chart()
+            # Путь для сохранения PNG рядом с PDF
+            chart_png_path = pdf_path.with_suffix('.png')
+            chart_img = self._create_dynamics_chart(save_path=chart_png_path)
             if chart_img:
                 content.append(Image(chart_img, width=6*inch, height=3.5*inch))
             content.append(Spacer(1, 20))
@@ -418,10 +420,13 @@ class ReportManager:
         
         return pdf_path
     
-    def _create_dynamics_chart(self):
+    def _create_dynamics_chart(self, save_path=None):
         """
         Создание графика динамики проходных баллов.
-        
+
+        Args:
+            save_path: опциональный путь для сохранения PNG файла
+
         Returns:
             BytesIO: изображение графика или None
         """
@@ -497,6 +502,11 @@ class ReportManager:
         plt.tight_layout()
         plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', facecolor='white')
         img_buffer.seek(0)
+
+        # Сохраняем PNG файл если указан путь
+        if save_path:
+            plt.savefig(save_path, format='png', dpi=150, bbox_inches='tight', facecolor='white')
+
         plt.close(fig)
-        
+
         return img_buffer

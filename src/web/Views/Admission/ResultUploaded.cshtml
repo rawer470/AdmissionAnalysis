@@ -1,0 +1,57 @@
+@using WebApp.Models.ViewModels;
+@{
+    ViewData["Title"] = "Admission Analysis";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
+}
+
+<main class="page">
+    <section class="card">
+        <header class="header">
+            <h1 class="title">Результат импорта CSV</h1>
+            <p class="subtitle">Сводка по изменениям после загрузки файлов</p>
+        </header>
+
+        <div class="stats">
+            <div class="stats__row stats__row--head">
+                <div>Показатель</div>
+                <div style="text-align:right;">Значение</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Удалено</div>
+                <div class="stats__value">@Model.Deleted</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Добавлено</div>
+                <div class="stats__value">@Model.Inserted</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Обновлено</div>
+                <div class="stats__value">@Model.Updated</div>
+            </div>
+
+            <div class="stats__row">
+                <div class="stats__label">Строк в snapshot</div>
+                <div class="stats__value">@Model.SnapshotRows</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a class="btnLink" asp-action="UploadCsv">Загрузить новые CSV</a>
+            <form asp-action="Clear" method="post" style="display:inline-block;">
+                <button type="submit" class="btnLink btnLink--danger">Очистить БД</button>
+                @Html.AntiForgeryToken()
+            </form>
+        </div>
+
+        @if (TempData["Cleared"] is bool cleared && cleared)
+        {
+            <p class="muted" style="margin-top:10px;">База данных очищена.</p>
+        }
+    </section>
+</main>

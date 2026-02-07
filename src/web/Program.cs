@@ -15,8 +15,21 @@ builder.Services.AddDbContext<AdmissionContext>(options =>
 
 builder.Services.AddScoped<IApplicantsCurrentRepository, ApplicantsCurrentRepository>();
 builder.Services.AddScoped<ImportService>();
+builder.Services.AddScoped<VisualizeService>();
+builder.Services.AddHttpClient<AnalysisService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:8000");
+});
 
 var app = builder.Build();
+
+// Пересоздание БД при запуске
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AdmissionContext>();
+    db.Database.EnsureDeleted();
+    db.Database.EnsureCreated();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -35,7 +48,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Admission}/{action=Index}/{id?}")
+    pattern: "{controller=Admission}/{action=UploadCsv}/{id?}")
     .WithStaticAssets();
 
 
