@@ -1,0 +1,68 @@
+﻿@{
+    ViewData["Title"] = "Upload CSV";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/upload.css" asp-append-version="true" />
+}
+
+<main class="page">
+    <section class="card">
+        <header class="card__header">
+            <h1 class="title">UploadCsv</h1>
+            <p class="subtitle">Выбери 4 CSV-файла и отправь.</p>
+        </header>
+
+        <form class="form" asp-action="UploadCsv" method="post" enctype="multipart/form-data">
+            <div class="field">
+                <label class="field__label" for="DateFolder">День приёмной кампании</label>
+                <select class="select" id="DateFolder" name="DateFolder">
+                    <option value="01">01 августа</option>
+                    <option value="02">02 августа</option>
+                    <option value="03">03 августа</option>
+                    <option value="04">04 августа</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="Ib">IB (.csv)</label>
+                <input class="file" id="Ib" type="file" name="Ib" accept=".csv">
+                <label class="fileBtn" for="Ib">Выбрать файл</label>
+                <span class="fileName" data-for="Ib">Файл не выбран</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="Itss">ITSS (.csv)</label>
+                <input class="file" id="Itss" type="file" name="Itss" accept=".csv">
+                <label class="fileBtn" for="Itss">Выбрать файл</label>
+                <span class="fileName" data-for="Itss">Файл не выбран</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="Ivt">IVT (.csv)</label>
+                <input class="file" id="Ivt" type="file" name="Ivt" accept=".csv">
+                <label class="fileBtn" for="Ivt">Выбрать файл</label>
+                <span class="fileName" data-for="Ivt">Файл не выбран</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="Pm">PM (.csv)</label>
+                <input class="file" id="Pm" type="file" name="Pm" accept=".csv">
+                <label class="fileBtn" for="Pm">Выбрать файл</label>
+                <span class="fileName" data-for="Pm">Файл не выбран</span>
+            </div>
+
+            <button class="btn" type="submit">Отправить</button>
+        </form>
+    </section>
+</main>
+
+<script>
+    document.querySelectorAll('input[type="file"]').forEach(inp => {
+        inp.addEventListener("change", () => {
+            const span = document.querySelector(`.fileName[data-for="${inp.id}"]`);
+            const name = inp.files?.[0]?.name ?? "Файл не выбран";
+            if (span) span.textContent = name;
+        });
+    });
+</script>

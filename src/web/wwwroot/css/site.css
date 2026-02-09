@@ -1,0 +1,295 @@
+/* =========================================================
+   Base / Reset
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #eaf0ff;
+  overflow-y: auto;
+
+  /* единый фон на все страницы */
+  background:
+    radial-gradient(900px 520px at 15% 20%, rgba(79, 140, 255, .28), transparent 60%),
+    radial-gradient(720px 460px at 85% 30%, rgba(99, 209, 198, .22), transparent 55%),
+    #0b1220;
+}
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-content {
+  flex: 1;
+  overflow: visible;
+  /* важно */
+}
+
+/* =========================================================
+   CSS Variables (global tokens)
+   ========================================================= */
+
+/* :root {
+  --bg: #0b1220;
+
+  --text: #eaf0ff;
+  --size: 14px;
+  --muted: rgba(234, 240, 255, 0.72);
+
+  --line: rgba(255, 255, 255, 0.14);
+
+  --accent: #4f8cff;
+  --accent2: #63d1c6;
+} */
+
+/* =========================================================
+   Links (global, neutral)
+   ========================================================= */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* =========================================================
+   Bootstrap focus compatibility
+   ========================================================= */
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow:
+    0 0 0 0.1rem rgba(255, 255, 255, 0.85),
+    0 0 0 0.25rem var(--accent);
+}
+
+/* =========================================================
+   App Header (Glass Navbar)
+   ========================================================= */
+
+/* ===== Bootstrap theme overrides ===== */
+:root {
+  --bs-body-color: #eaf0ff;
+  --bs-heading-color: #eaf0ff;
+  --bs-body-bg: #0b1220;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  backdrop-filter: blur(14px);
+  background:
+    linear-gradient(180deg,
+      rgba(11, 18, 32, 0.75),
+      rgba(11, 18, 32, 0.55));
+
+  border-bottom: 1px solid var(--line);
+}
+
+.app-header__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ----- Logo ----- */
+
+.app-logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--text);
+}
+
+.app-logo span {
+  color: var(--accent);
+}
+
+/* ----- Navigation ----- */
+
+.app-nav {
+  display: flex;
+  gap: 18px;
+}
+
+.app-nav__link {
+  position: relative;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 6px 2px;
+  transition: color .15s ease;
+}
+
+.app-nav__link:hover {
+  color: var(--text);
+}
+
+/* underline animation */
+.app-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition: opacity .15s ease, transform .15s ease;
+}
+
+.app-nav__link:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* ----- Active link ----- */
+
+.app-nav__link.active {
+  color: var(--text);
+}
+
+.app-nav__link.active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* =========================================================
+   Footer (Glass)
+   ========================================================= */
+
+.footer {
+  position: relative;
+  margin-top: auto;
+  backdrop-filter: blur(14px);
+  background-color: rgba(11, 18, 32, 0.75);
+  padding: 26px 0;
+  color: var(--muted);
+
+  /* было */
+  /* box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35); */
+
+  /* стало: разделение без "белой линии" */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 -10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* внутренний контейнер */
+.footer__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(180px, 0.9fr) minmax(160px, 0.8fr);
+  gap: 16px 28px;
+
+  font-size: 14px;
+}
+
+/* brand */
+.footer__brand {
+  display: grid;
+  gap: 6px;
+}
+
+.footer__title {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.footer__tagline {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* links */
+.footer__links {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+/* ссылки */
+.footer a {
+  color: var(--text);
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.footer a:hover {
+  opacity: 1;
+}
+
+/* meta */
+.footer__meta {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  align-content: start;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* мобильная версия */
+@media (max-width: 640px) {
+  .footer__inner {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .footer__meta {
+    justify-items: center;
+  }
+}
+
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .app-header__inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .app-nav {
+    gap: 14px;
+  }
+
+  :root {
+    --size: 12px;
+  }
+}

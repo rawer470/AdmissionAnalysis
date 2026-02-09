@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+@{
+    ViewData["Title"] = "Admission Analysis";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebApp.styles.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body class="layout">
+    <header class="app-header">
+        <div class="app-header__inner">
+            <a class="app-logo" asp-controller="Admission" asp-action="Index">
+                Admission <span>Analyzer</span>
+            </a>
+
+            <nav class="app-nav">
+                <a class="app-nav__link" asp-controller="Admission" asp-action="UploadCsv">
+                    Загрузка
+                </a>
+                <a class="app-nav__link" asp-controller="Admission" asp-action="ResultUploaded">
+                    Результат
+                </a>
+                <a class="app-nav__link" asp-controller="Visualize" asp-action="Index">
+                    Посмотреть списки
+                </a>
+                <a class="app-nav__link" asp-controller="Statistics" asp-action="Index">
+                    Статистика
+                </a>
+                <a class="app-nav__link" asp-controller="Admission" asp-action="Privacy">
+                    Политика конфиденциальности
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="layout-content" role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="footer__inner">
+            <div class="footer__brand">
+                <div class="footer__title">CSV Analyzer</div>
+                <div class="footer__tagline">Анализ приемных данных и CSV-отчетов</div>
+            </div>
+            <div class="footer__links">
+                <a asp-controller="Admission" asp-action="Index">Результат</a>
+                <a asp-controller="Admission" asp-action="UploadCsv">Загрузка</a>
+                <a asp-controller="Admission" asp-action="Privacy">Политика конфиденциальности</a>
+            </div>
+            <div class="footer__meta">
+                <span>&copy; @DateTime.Now.Year</span>
+                <span>@ViewData["Title"]</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

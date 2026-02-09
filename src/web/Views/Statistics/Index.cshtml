@@ -1,0 +1,379 @@
+@{
+    ViewData["Title"] = "Статистика зачисления";
+    var availableDays = ViewBag.AvailableDays as List<string> ?? new List<string>();
+    var hasPdf = ViewBag.HasPdf ?? false;
+    var hasChart = ViewBag.HasChart ?? false;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/statistics.css" asp-append-version="true" />
+}
+
+<main class="stats-page">
+    <section class="stats-card">
+        <header class="stats-header">
+            <div>
+                <p class="eyebrow">Анализ данных</p>
+                <h1>Статистика зачисления</h1>
+                <p class="muted">Просмотр статистики по дням, динамика проходных баллов и скачивание отчетов.</p>
+            </div>
+            @if (hasPdf)
+            {
+                <a href="@Url.Action("DownloadPdf", "Statistics")" class="btn primary download-btn">
+                    Скачать PDF
+                </a>
+            }
+        </header>
+
+        @if (!availableDays.Any())
+        {
+            <div class="stats-empty">
+                <p>Данные статистики отсутствуют. Сначала  загрузите списки</p>
+                <a href="@Url.Action("UploadCsv", "Admission")" class="btn primary">Перейти к загрузке</a>
+            </div>
+        }
+        else
+        {
+            <div class="stats-tabs">
+                <button type="button" class="tab-btn active" data-tab="overview">Обзор</button>
+                <button type="button" class="tab-btn" data-tab="dynamics">Динамика</button>
+                @foreach (var day in availableDays)
+                {
+                    <button type="button" class="tab-btn" data-tab="day-@day">День @day</button>
+                }
+            </div>
+
+            <div class="tab-content active" id="tab-overview">
+                <h2>Проходные баллы (последний день)</h2>
+                <div class="passing-scores">
+                    <div class="score-card" data-program="pm">
+                        <div class="score-label">Прикладная математика</div>
+                        <div class="score-value" id="score-pm">—</div>
+                    </div>
+                    <div class="score-card" data-program="ivt">
+                        <div class="score-label">Информатика и ВТ</div>
+                        <div class="score-value" id="score-ivt">—</div>
+                    </div>
+                    <div class="score-card" data-program="itss">
+                        <div class="score-label">ИТСС</div>
+                        <div class="score-value" id="score-itss">—</div>
+                    </div>
+                    <div class="score-card" data-program="ib">
+                        <div class="score-label">Информационная безопасность</div>
+                        <div class="score-value" id="score-ib">—</div>
+                    </div>
+                </div>
+
+                <h2>Общая статистика</h2>
+                <div class="overview-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Всего мест:</span>
+                        <span class="stat-value" id="total-capacity">—</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Всего зачислено:</span>
+                        <span class="stat-value" id="total-enrolled">—</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Программ с недобором:</span>
+                        <span class="stat-value" id="shortage-count">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-dynamics">
+                <h2>Динамика проходных баллов</h2>
+                @if (hasChart)
+                {
+                    <div class="chart-container">
+                        <img src="@Url.Action("GetChartImage", "Statistics")" alt="Динамика проходных баллов" class="dynamics-chart" />
+                    </div>
+                }
+                else
+                {
+                    <div class="chart-placeholder">
+                        <canvas id="dynamicsChart"></canvas>
+                    </div>
+                }
+                <div class="dynamics-table-container">
+                    <table class="dynamics-table">
+                        <thead>
+                            <tr>
+                                <th>Программа</th>
+                                @foreach (var day in availableDays)
+                                {
+                                    <th>День @day</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody id="dynamics-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @foreach (var day in availableDays)
+            {
+                <div class="tab-content" id="tab-day-@day">
+                    <h2>Статистика за день @day</h2>
+                    <div class="day-stats" id="stats-day-@day">
+                        <div class="loading">Загрузка...</div>
+                    </div>
+                </div>
+            }
+        }
+    </section>
+</main>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const availableDays = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(availableDays));
+    const programNames = {
+        'pm': 'Прикладная математика',
+        'ivt': 'Информатика и ВТ',
+        'itss': 'ИТСС',
+        'ib': 'Информационная безопасность'
+    };
+    const programColors = {
+        'pm': '#1976d2',
+        'ivt': '#388e3c',
+        'itss': '#f57c00',
+        'ib': '#d32f2f'
+    };
+
+    let allStats = {};
+    let dynamicsChart = null;
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Load all stats
+    async function loadAllStats() {
+        try {
+            const res = await fetch('/Statistics/GetAllStats');
+            if (!res.ok) throw new Error('Failed to load stats');
+            allStats = await res.json();
+            updateOverview();
+            updateDynamicsTable();
+            loadDayTabs();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function updateOverview() {
+        const lastDay = availableDays[availableDays.length - 1];
+        if (!allStats[lastDay]) return;
+
+        const stats = allStats[lastDay];
+        const passing = stats.passing_score || {};
+        const summary = stats.summary || {};
+        const overall = summary.overall || {};
+
+        // Passing scores
+        ['pm', 'ivt', 'itss', 'ib'].forEach(prog => {
+            const el = document.getElementById('score-' + prog);
+            const score = passing[prog];
+            if (score === null || score === undefined) {
+                el.textContent = 'НЕДОБОР';
+                el.classList.add('shortage');
+            } else {
+                el.textContent = score;
+                el.classList.remove('shortage');
+            }
+        });
+
+        // Overall stats
+        document.getElementById('total-capacity').textContent = overall.total_capacity || '—';
+        document.getElementById('total-enrolled').textContent = overall.total_enrolled || '—';
+        const shortage = overall.programs_with_shortage || [];
+        document.getElementById('shortage-count').textContent = shortage.length;
+    }
+
+    function updateDynamicsTable() {
+        const tbody = document.getElementById('dynamics-tbody');
+        tbody.innerHTML = '';
+
+        ['pm', 'ivt', 'itss', 'ib'].forEach(prog => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${programNames[prog]}</td>`;
+            availableDays.forEach(day => {
+                const stats = allStats[day];
+                const score = stats?.passing_score?.[prog];
+                const text = score === null || score === undefined ? 'НЕДОБОР' : score;
+                const cls = score === null || score === undefined ? 'shortage' : '';
+                tr.innerHTML += `<td class="${cls}">${text}</td>`;
+            });
+            tbody.appendChild(tr);
+        });
+
+        // Draw chart if no PNG
+        if (!@Html.Raw(hasChart.ToString().ToLower())) {
+            drawDynamicsChart();
+        }
+    }
+
+    function drawDynamicsChart() {
+        const canvas = document.getElementById('dynamicsChart');
+        if (!canvas) return;
+
+        const datasets = ['pm', 'ivt', 'itss', 'ib'].map(prog => ({
+            label: programNames[prog],
+            data: availableDays.map(day => allStats[day]?.passing_score?.[prog] ?? null),
+            borderColor: programColors[prog],
+            backgroundColor: programColors[prog] + '33',
+            tension: 0.3,
+            spanGaps: false
+        }));
+
+        if (dynamicsChart) dynamicsChart.destroy();
+        dynamicsChart = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: availableDays.map(d => 'День ' + d),
+                datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Динамика проходных баллов' }
+                },
+                scales: {
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    }
+
+    function loadDayTabs() {
+        availableDays.forEach(day => {
+            const container = document.getElementById('stats-day-' + day);
+            if (!container) return;
+
+            const stats = allStats[day];
+            if (!stats) {
+                container.innerHTML = '<p class="muted">Данные не найдены</p>';
+                return;
+            }
+
+            const programs = stats.summary?.programs || {};
+            const overall = stats.summary?.overall || {};
+
+            // Таблица статистики в формате ТЗ (п. 2.14.e)
+            let html = `
+                <h3>Статистика по образовательным программам</h3>
+                <div class="stats-table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Показатель</th>
+                                <th>ПМ</th>
+                                <th>ИВТ</th>
+                                <th>ИТСС</th>
+                                <th>ИБ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Общее кол-во заявлений</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.total_applications || 0}</td>`).join('')}
+                            </tr>
+                            <tr class="highlight">
+                                <td>Количество мест на ОП</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.capacity || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во заявлений 1-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.applications_priority_1 || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во заявлений 2-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.applications_priority_2 || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во заявлений 3-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.applications_priority_3 || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во заявлений 4-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.applications_priority_4 || 0}</td>`).join('')}
+                            </tr>
+                            <tr class="highlight">
+                                <td>Кол-во зачисленных 1-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.enrolled_priority_1 || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во зачисленных 2-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.enrolled_priority_2 || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во зачисленных 3-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.enrolled_priority_3 || 0}</td>`).join('')}
+                            </tr>
+                            <tr>
+                                <td>Кол-во зачисленных 4-го приоритета</td>
+                                ${['pm','ivt','itss','ib'].map(p => `<td>${programs[p]?.enrolled_priority_4 || 0}</td>`).join('')}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Проходные баллы
+            html += `
+                <h3>Проходные баллы</h3>
+                <div class="passing-scores-row">
+                    ${['pm','ivt','itss','ib'].map(prog => {
+                        const p = programs[prog] || {};
+                        const passing = p.passing_score;
+                        const passingText = passing === 'НЕДОБОР' || passing === null ? 'НЕДОБОР' : passing;
+                        const passingCls = passing === 'НЕДОБОР' || passing === null ? 'shortage' : '';
+                        return `<div class="passing-item ${passingCls}"><span>${programNames[prog]}:</span> <strong>${passingText}</strong></div>`;
+                    }).join('')}
+                </div>
+            `;
+
+            // Списки зачисленных абитуриентов (п. 2.14.d)
+            html += `<h3>Списки зачисленных абитуриентов</h3><div class="enrolled-lists">`;
+
+            ['pm', 'ivt', 'itss', 'ib'].forEach(prog => {
+                const p = programs[prog] || {};
+                const enrolledList = p.enrolled_list || [];
+
+                html += `
+                    <div class="enrolled-program">
+                        <h4>${p.program_name || programNames[prog]} (${enrolledList.length} чел.)</h4>
+                        ${enrolledList.length > 0 ? `
+                            <div class="enrolled-table-wrap">
+                                <table class="enrolled-table">
+                                    <thead><tr><th>№</th><th>ID</th><th>Сумма баллов</th></tr></thead>
+                                    <tbody>
+                                        ${enrolledList.map((s, i) => `<tr><td>${i+1}</td><td>${s.id}</td><td>${s.total}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : '<p class="muted">Нет зачисленных</p>'}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        });
+    }
+
+    // Initial load
+    if (availableDays.length > 0) {
+        loadAllStats();
+    }
+</script>
+}

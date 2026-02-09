@@ -6,7 +6,7 @@ obj/
 .vs/
 .vscode/
 .idea/
-
+.claude/
 # OS
 .DS_Store
 
@@ -18,9 +18,20 @@ venv/
 .pytest_cache/
 
 # Local data (uploaded files, extracted tables, reports)
-data/
+data/*
+!data/mock/
+!data/mock/**
+!src/web/Data/
+!src/web/Data/**
+
+# Database files (local SQLite snapshots, WAL/SHM journaling)
+*.db
+*.db-shm
+*.db-wal
 
 # Secrets / env
 .env
 
+# Agent context (Пасхалка от Артёма)
+agent/
 
