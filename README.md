@@ -383,7 +383,7 @@ curl "http://localhost:8000/api/analyze/04"
 
 ## Авторы
 
-Lev Shapovalov, Mark Shapovalov, Artem Kolerov
+Lev Shapovalov, Mark Shapovalov, Artem Kolerov, Dinar Rachmatulin
 
 rawer470@gmail.com
 
